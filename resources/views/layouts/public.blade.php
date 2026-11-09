@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>{{ $title ?? 'WiseStore' }}</title>
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @livewireStyles
+    </head>
+
+    <body class="flex flex-col min-h-screen
+         bg-gray-50 text-gray-800 antialiased">
+
+        {{-- Barra de aviso --}}
+
+        <div class="flex items-center justify-center gap-2
+             bg-gray-900 text-gray-100 text-xs text-center py-2 px-4">
+            {{-- heroicons: truck --}}
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 shrink-0">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+            </svg>
+            Entregas em toda Luanda · Pagamento na entrega disponível
+        </div>
+
+        {{-- Header --}}
+
+        <header class="sticky top-0 z-40 bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+
+                 <a href="{{ url('/') }}" class=" flex items-center tracking-tight text-gray-900 gap-2">
+
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" 
+                            stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 
+                                3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 
+                                1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>
+                        </svg>
+                <span>
+                    <span class="block text-3xl font-medium  text-black">Wise<span class="text-blue-500">Store</span></span>
+    
+                </span>
+            </a>
+
+
+                {{-- Pesquisa --}}
+
+                <form action="{{ url('/') }}" method="GET" class="hidden md:flex flex-1 max-w-xl mx-auto">
+
+                    <input type="text" name="q" placeholder="Pesquisar produtos..."
+                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-sm focus:outline-none focus:border-blue-600">
+                    <button type="submit"
+                        class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-sm hover:bg-blue-700 ml-2">
+                        {{-- heroicons: magnifying-glass --}}
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                        </svg>
+                        Buscar
+                    </button>
+                </form>
+
+                {{-- Ações --}}
+                <nav class="flex items-center gap-4 ml-auto text-sm font-medium">
+                    @auth
+                        @can('only-admin')
+                            <a href="{{ route('dashboard') }}" class="flex items-center gap-1 text-gray-600 hover:text-blue-600">
+                                {{-- heroicons: squares-2x2 --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+                                </svg>
+                                Painel admin
+                            </a>
+                        @endcan
+
+
+                        <form method="POST" action="{{ route('public.logout') }}">
+                            @csrf
+                            <button type="submit" class="flex cursor-pointer items-center gap-1 text-gray-600 hover:text-red-600">
+                                {{-- heroicons: arrow-right-on-rectangle (espelhado para sair) --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 -scale-x-100">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                                </svg>
+                                Sair
+                            </button>
+                        </form>
+                    @endauth
+
+                    @guest
+                        <a href="{{ route('public.login') }}" wire:navigate class="flex items-center gap-1 text-gray-600 hover:text-blue-600">
+                            {{-- heroicons: arrow-right-on-rectangle --}}
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                            </svg>
+                            Entrar
+                        </a>
+                        <a href="{{ route('public.users.create') }}" wire:navigate class="flex items-center gap-1 text-gray-600 hover:text-blue-600">
+                            {{-- heroicons: user-plus --}}
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+                            </svg>
+                            Criar conta
+                        </a>
+                    @endguest
+
+        @auth      
+            <a href="{{ route('public.cart.index') }}"
+                class="flex items-center gap-1 rounded-sm px-2 py-1 text-sm text-white transition hover:bg-white/10">
+
+                  {{-- Bolha vermelha com o número --}}
+                <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-bold text-white">
+                    {{ auth()->user()->carts()->count() }}
+                </span>
+
+                {{-- heroicons: shopping-cart --}}
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-black">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                </svg>
+
+                <span>Carrinho</span>
+
+            </a>
+    @endauth      
+
+                </nav>
+            </div>
+
+            {{-- Categorias --}}
+            
+            <div class="border-t border-gray-100 bg-white">
+                <ul class="max-w-7xl mx-auto px-4 py-2 flex gap-6 overflow-x-auto text-sm text-gray-600 whitespace-nowrap">
+
+                    <li>
+                        <a href="{{ url('/') }}" class="flex items-center gap-1 hover:text-blue-600">
+                            {{-- heroicons: home --}}
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                            </svg>
+                            Início
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="{{ route('public.products.index') }}" wire:navigate class="flex items-center gap-1 hover:text-blue-600">
+                               {{-- heroicons: cube --}}
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+                            </svg>
+                            productos
+                        </a>
+                    </li>
+                  
+                    <li>
+                        <a href="{{ route('public.categories.index') }}" wire:navigate class="flex items-center gap-1 hover:text-blue-600">
+                            {{-- heroicons: squares-2x2 --}}
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+                            </svg>
+                            Categorias
+                        </a>
+                    </li>
+
+
+                    @foreach (\App\Models\Category::wherehas('products')->orderBy('name')->limit(6)->get(['id', 'name']) as $category)
+
+                        <li>
+                            <a href="{{ route('public.categories.show', $category) }}" wire:navigate 
+                            class="hover:text-blue-600"> {{ $category->name }}</a>
+                        </li>
+
+                    @endforeach
+
+                    <li>
+                        <a href="#" class="flex items-center gap-1 text-red-600 font-medium hover:text-red-700">
+                            {{-- heroicons: bolt --}}
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                            </svg>
+                            Promoções
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+        </header>
+
+        {{-- Conteúdo --}}
+        <main class="flex-1 w-full max-w-7xl mx-auto  p-8">
+            {{ $slot }}
+        </main>
+
+        {{-- Benefícios --}}
+        <section class="bg-white border-t border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                <div class="flex items-center gap-3 p-4 border border-gray-200 rounded-sm">
+                    {{-- heroicons: truck --}}
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-8 shrink-0 text-blue-600">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                    </svg>
+                    <div>
+                        <p class="font-semibold text-gray-900">Entrega rápida</p>
+                        <p class="text-gray-500">Recebe o teu pedido em poucos dias.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 p-4 border border-gray-200 rounded-sm">
+                    {{-- heroicons: shield-check --}}
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-8 shrink-0 text-blue-600">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                    </svg>
+                    <div>
+                        <p class="font-semibold text-gray-900">Compra segura</p>
+                        <p class="text-gray-500">Pagamento protegido e confiável.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 p-4 border border-gray-200 rounded-sm">
+                    {{-- heroicons: chat-bubble-left --}}
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-8 shrink-0 text-blue-600">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+                    </svg>
+                    <div>
+                        <p class="font-semibold text-gray-900">Suporte</p>
+                        <p class="text-gray-500">Ajuda sempre que precisares.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {{-- Footer --}}
+        <footer class="bg-gray-900 text-gray-400 text-sm">
+            <div class="max-w-7xl mx-auto px-4 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div class="col-span-2 md:col-span-1">
+                    <p class="text-lg font-bold text-white mb-2">Wondercell</p>
+                    <p>A tua loja de tecnologia em Angola.</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-white mb-2">Loja</p>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="#" class="flex items-center gap-2 hover:text-white">
+                                {{-- heroicons: cube --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+                                </svg>
+                                Produtos
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center gap-2 hover:text-white">
+                                {{-- heroicons: bolt --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                                </svg>
+                                Promoções
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="font-semibold text-white mb-2">Conta</p>
+                    <ul class="space-y-1">
+                        @guest
+                            <li>
+                                <a href="{{ route('public.login') }}" class="flex items-center gap-2 hover:text-white">
+                                    {{-- heroicons: arrow-right-on-rectangle --}}
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 shrink-0">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                                    </svg>
+                                    Entrar
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('public.users.create') }}" class="flex items-center gap-2 hover:text-white">
+                                    {{-- heroicons: user-plus --}}
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 shrink-0">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+                                    </svg>
+                                    Criar conta
+                                </a>
+                            </li>
+                        @endguest
+                        <li>
+                            <a href="{{ url('/carrinho') }}" class="flex items-center gap-2 hover:text-white">
+                                {{-- heroicons: shopping-cart --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                                </svg>
+                                Carrinho
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="font-semibold text-white mb-2">Ajuda</p>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="#" class="flex items-center gap-2 hover:text-white">
+                                {{-- heroicons: envelope --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                                </svg>
+                                Contactos
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center gap-2 hover:text-white">
+                                {{-- heroicons: truck --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                                </svg>
+                                Entregas
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 text-center text-xs py-4">
+                © {{ date('Y') }} Wondercell. Todos os direitos reservados.
+            </div>
+        </footer>
+
+        @livewireScripts
+    </body>
+</html>
