@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -76,31 +77,47 @@ class User extends Authenticatable
         $query->where('role', 'admin');
     }
 
-    public function products()
+    public function products(): HasMany
     {
 
         return $this->hasMany(Product::class);
     }
 
-    public function comments()
+    public function comments(): HasMany
     {
 
         return $this->hasMany(Comment::class);
     }
 
-    public function likes()
+    public function likes(): HasMany
     {
 
         return $this->hasMany(Like::class);
     }
 
-    public function carts()
+    public function carts(): HasMany
     {
         return $this->hasMany(Cart::class);
     }
 
-    public function orders()
+    public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function bancos(): HasMany
+    {
+
+        return $this->hasMany(Banco::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function proofpayment(): HasMany
+    {
+        return $this->hasMany(PaymentProof::class);
     }
 }

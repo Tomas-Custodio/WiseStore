@@ -107,11 +107,14 @@ new #[Layout('layouts::public')] class extends Component
             <p class="mt-0.5 text-sm text-gray-500">{{ $this->carts->count() }} produto(s) no carrinho</p>
         </div>
 
-        <a href="{{ route('public.encomendas.index') }}"
-            wire:navigate
-            class="rounded-sm border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100">
-            Ver encomendas
-        </a>
+         <section class="flex- items-center justify-around gap-2">
+             
+                     <a href="{{ route('public.encomendas.index') }}"
+                wire:navigate
+                class="rounded-sm border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100">
+                Ver encomendas
+                     </a>
+         </section>
     </div>
 
     @if (session('checkout'))
