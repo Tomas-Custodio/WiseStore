@@ -25,7 +25,7 @@ new #[Layout('layouts::public')] class extends Component
 
         abort_unless($order->user_id === auth()->id(), 403);
 
-        $this->order = $order->load('items');
+        $this->order = $order->load('items.product');
         $this->user = auth()->user();
         $this->total = $order->total;
 
@@ -69,7 +69,7 @@ new #[Layout('layouts::public')] class extends Component
 };
 ?>
 
-<div class="mx-auto max-w-6xl px-4 py-6">
+<div class="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 2xl:max-w-7xl">
 
     {{-- Lista dos bancos angolanos (só para os logótipos) --}}
 
@@ -97,8 +97,7 @@ new #[Layout('layouts::public')] class extends Component
 
     <a href="{{ route('public.encomendas.index') }}" wire:navigate
 
-         class="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition 
-            hover:text-blue-600">
+         class="mb-4 inline-flex items-center gap-1.5 py-1 text-sm font-medium text-gray-500 transition hover:text-blue-600">
 
             {{-- heroicons: arrow-left --}}
 
@@ -115,7 +114,7 @@ new #[Layout('layouts::public')] class extends Component
 
     <div class="mb-4 flex items-center gap-3">
 
-        <span class="flex size-10 items-center justify-center rounded-sm bg-blue-50 
+        <span class="flex size-10 shrink-0 items-center justify-center rounded-sm bg-blue-50
             text-blue-600">
 
             {{-- heroicons: banknotes --}}
@@ -125,19 +124,86 @@ new #[Layout('layouts::public')] class extends Component
             </svg>
         </span>
 
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Pagamento</h1>
-            <p class="mt-0.5 text-sm text-gray-500">Encomenda Nº{{ $order->id }} · {{ $order->created_at->format('d/m/Y H:i') }}</p>
+        <div class="min-w-0">
+            <h1 class="text-xl font-bold text-gray-900 sm:text-2xl">Pagamento</h1>
+            <p class="mt-0.5 truncate text-xs text-gray-500 sm:text-sm">Encomenda Nº{{ $order->id }} · {{ $order->created_at->format('d/m/Y H:i') }}</p>
         </div>
 
     </div>
 
-    <div class="grid gap-4 lg:grid-cols-5">
+    {{-- Passos do pagamento --}}
+
+    @php
+        $currentStep = match ($order->status) {
+            'review' => 3,
+            'paid' => 4,
+            default => $this->bancoEscolhido ? 2 : 1,
+        };
+
+        $steps = [
+            1 => 'Escolher banco',
+            2 => 'Fazer transferência',
+            3 => 'Enviar comprovativo',
+        ];
+    @endphp
+
+    <ol class="mb-2 flex items-center gap-1.5 overflow-hidden rounded-sm border border-gray-200 bg-white p-2.5 shadow-sm sm:mb-6 sm:gap-4 sm:p-4">
+
+        @foreach ($steps as $number => $stepLabel)
+
+            <li class="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2">
+
+                <span @class([
+                    'flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold',
+                    'bg-green-600 text-white' => $currentStep > $number,
+                    'bg-blue-600 text-white ring-4 ring-blue-100' => $currentStep === $number,
+                    'bg-gray-100 text-gray-400' => $currentStep < $number,
+                ])>
+
+                    @if ($currentStep > $number)
+
+                        {{-- heroicons: check --}}
+
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="size-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                        </svg>
+                    @else
+                        {{ $number }}
+                    @endif
+                </span>
+
+                <span @class([
+                    'hidden text-sm font-medium sm:inline',
+                    'text-gray-900' => $currentStep >= $number,
+                    'text-gray-400' => $currentStep < $number,
+                ])>{{ $stepLabel }}</span>
+
+                @if (! $loop->last)
+                    <span @class([
+                        'h-0.5 flex-1 rounded-full',
+                        'bg-green-500' => $currentStep > $number,
+                        'bg-gray-200' => $currentStep <= $number,
+                    ])></span>
+                @endif
+            </li>
+        @endforeach
+    </ol>
+
+    {{-- No telemóvel os nomes dos passos ficam escondidos, por isso mostramos o passo atual aqui --}}
+
+    <p class="mb-4 text-center text-xs font-medium text-gray-500 sm:hidden">
+        @if ($currentStep > count($steps))
+            Pagamento concluído
+        @else
+            Passo {{ $currentStep }} de {{ count($steps) }} · <span class="text-gray-900">{{ $steps[$currentStep] }}</span>
+        @endif
+    </p>
+
+    <div class="grid gap-4 lg:grid-cols-5 xl:gap-6">
 
         {{-- ======================= Lado esquerdo: encomenda e produtos ======================= --}}
 
-        <section class="overflow-hidden rounded-sm border border-gray-200 bg-white
-            shadow-sm lg:col-span-3">
+        <section class="min-w-0 self-start overflow-hidden rounded-sm border border-gray-200 bg-white shadow-sm lg:col-span-3">
 
             <header class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100
                  bg-gray-50 px-4 py-3">
@@ -156,21 +222,64 @@ new #[Layout('layouts::public')] class extends Component
                             Produtos da encomenda
                     </p>
 
+                    <span class="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">
+                        {{ $order->items->count() }}
+                    </span>
+
                 </div>
 
                 <span @class([
-                    'rounded-sm px-2 py-1 text-xs font-semibold',
+                    'inline-flex shrink-0 items-center gap-1.5 rounded-sm px-2 py-1 text-xs font-semibold',
                     'bg-yellow-100 text-yellow-700' => $order->status === 'pending',
                     'bg-blue-100 text-blue-700' => $order->status === 'review',
                     'bg-green-100 text-green-700' => $order->status === 'paid',
                     'bg-red-100 text-red-700' => $order->status === 'rejected',
                 ])>
 
-        
+                    <span class="size-1.5 rounded-full bg-current"></span>
+
+                    {{ match ($order->status) {
+                        'pending' => 'Pendente',
+                        'review' => 'Em análise',
+                        'paid' => 'Paga',
+                        'rejected' => 'Rejeitada',
+                        default => ucfirst($order->status),
+                    } }}
                 </span>
             </header>
 
-            <div class="overflow-x-auto">
+            {{-- Telemóvel e tablet pequeno: lista de cartões --}}
+
+            <ul class="divide-y divide-gray-100 md:hidden">
+
+                @foreach ($order->items as $item)
+
+                    <li wire:key="item-mobile-{{ $item->id }}" class="flex items-center gap-3 px-3 py-3 sm:px-4">
+
+                        @if ($item->product?->img)
+                            <img src="{{ asset('storage/'.$item->product->img) }}" alt="{{ $item->product_name }}"
+                                class="size-12 shrink-0 rounded-sm object-cover ring-1 ring-gray-200 sm:size-14">
+                        @else
+                            <div class="flex size-12 shrink-0 items-center justify-center rounded-sm bg-gray-100 text-xl sm:size-14">📦</div>
+                        @endif
+
+                        <div class="min-w-0 flex-1">
+                            <p class="line-clamp-2 break-words text-sm font-medium text-gray-900">{{ $item->product_name }}</p>
+                            <p class="mt-0.5 text-xs text-gray-500">
+                                {{ $item->quantity }} × {{ number_format($item->preco, 0, ',', ' ') }} Kz
+                            </p>
+                        </div>
+
+                        <p class="whitespace-nowrap text-sm font-semibold text-gray-900">
+                            {{ number_format($item->preco * $item->quantity, 0, ',', ' ') }} Kz
+                        </p>
+                    </li>
+                @endforeach
+            </ul>
+
+            {{-- Tablet grande e desktop: tabela --}}
+
+            <div class="hidden overflow-x-auto md:block">
             <table class="w-full text-left">
                 <thead class="text-xs font-semibold uppercase tracking-wider text-gray-500">
                     <tr>
@@ -185,26 +294,38 @@ new #[Layout('layouts::public')] class extends Component
 
                     @foreach ($order->items as $item)
 
-                        <tr wire:key="item-{{ $item->id }}">
-                            <td class="px-4 py-2 text-sm text-gray-900">{{ $item->product_name }}</td>
+                        <tr wire:key="item-{{ $item->id }}" class="transition hover:bg-gray-50">
+                            <td class="px-4 py-2">
+                                <div class="flex items-center gap-3">
+
+                                    @if ($item->product?->img)
+                                        <img src="{{ asset('storage/'.$item->product->img) }}" alt="{{ $item->product_name }}"
+                                            class="size-12 shrink-0 rounded-sm object-cover ring-1 ring-gray-200">
+                                    @else
+                                        <div class="flex size-12 shrink-0 items-center justify-center rounded-sm bg-gray-100 text-lg">📦</div>
+                                    @endif
+
+                                    <span class="line-clamp-2 text-sm font-medium text-gray-900">{{ $item->product_name }}</span>
+                                </div>
+                            </td>
                             <td class="px-4 py-2 text-center text-sm text-gray-600">{{ $item->quantity }}</td>
-                            <td class="px-4 py-2 text-right text-sm text-gray-600">{{ number_format($item->preco, 0, ',', ' ') }} Kz</td>
-                            <td class="px-4 py-2 text-right text-sm font-semibold text-gray-900">{{ number_format($item->preco * $item->quantity, 0, ',', ' ') }} Kz</td>
+                            <td class="whitespace-nowrap px-4 py-2 text-right text-sm text-gray-600">{{ number_format($item->preco, 0, ',', ' ') }} Kz</td>
+                            <td class="whitespace-nowrap px-4 py-2 text-right text-sm font-semibold text-gray-900">{{ number_format($item->preco * $item->quantity, 0, ',', ' ') }} Kz</td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
             </div>
 
-            <footer class="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-4 py-3">
+            <footer class="flex items-center justify-between gap-2 border-t border-gray-100 bg-gray-50 px-3 py-3 sm:px-4">
                 <span class="text-sm font-medium text-gray-600">Total a pagar</span>
-                <span class="text-xl font-bold text-gray-900">{{ number_format($this->total, 0, ',', ' ') }} Kz</span>
+                <span class="whitespace-nowrap text-base font-bold text-gray-900 sm:text-lg md:text-xl">{{ number_format($this->total, 0, ',', ' ') }} Kz</span>
             </footer>
         </section>
 
         {{-- ======================= Lado direito: escolher o banco ======================= --}}
 
-        <section class="space-y-4 lg:col-span-2">
+        <section class="min-w-0 space-y-4 self-start lg:sticky lg:top-4 lg:col-span-2 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
 
             <div class="overflow-hidden rounded-sm border border-gray-200 bg-white shadow-sm">
 
@@ -220,16 +341,16 @@ new #[Layout('layouts::public')] class extends Component
                     <p class="text-sm font-semibold text-gray-900">Escolha o banco para a transferência</p>
                 </header>
 
-                <div class="space-y-2 p-4">
+                <div class="grid gap-2 p-4 sm:grid-cols-2 lg:grid-cols-1">
 
                     @forelse ($this->bancos as $banco)
                         @php $bankInfo = $bankLogos->get($banco->name); @endphp
 
                         <label wire:key="banco-{{ $banco->id }}"
                             @class([
-                                'flex cursor-pointer items-center gap-3 rounded-sm border px-3 py-2.5 transition',
+                                'flex cursor-pointer items-center gap-3 rounded-sm border px-3 py-3 transition sm:py-2.5',
                                 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' => $bancoId === $banco->id,
-                                'border-gray-200 hover:bg-gray-50' => $bancoId !== $banco->id,
+                                'border-gray-200 hover:border-gray-300 hover:bg-gray-50' => $bancoId !== $banco->id,
                             ])>
 
                             <input type="radio" wire:model.live="bancoId" value="{{ $banco->id }}" class="sr-only">
@@ -248,7 +369,7 @@ new #[Layout('layouts::public')] class extends Component
                                 @endif
                             </span>
 
-                            <span class="flex-1 truncate text-sm font-medium text-gray-800">{{ $banco->name }}</span>
+                            <span class="min-w-0 flex-1 line-clamp-2 break-words text-sm font-medium leading-tight text-gray-800">{{ $banco->name }}</span>
 
                             {{-- heroicons: check-circle (solid) --}}
 
@@ -256,13 +377,15 @@ new #[Layout('layouts::public')] class extends Component
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-5 shrink-0 text-blue-600">
                                     <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clip-rule="evenodd" />
                                 </svg>
+                            @else
+                                <span class="size-5 shrink-0 rounded-full border-2 border-gray-300"></span>
                             @endif
 
                         </label>
 
                     @empty
 
-                        <div class="flex flex-col items-center gap-2 py-6 text-center text-sm text-gray-500">
+                        <div class="col-span-full flex flex-col items-center gap-2 py-6 text-center text-sm text-gray-500">
                             {{-- heroicons: inbox --}}
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" 
                                 stroke="currentColor" class="size-10 text-gray-300">
@@ -295,15 +418,15 @@ new #[Layout('layouts::public')] class extends Component
                             'IBAN' => $this->bancoEscolhido->iban,
                             'Referência' => 'Encomenda Nº'.$order->id,
                         ] as $label => $value)
-                            <div class="flex items-center justify-between gap-3 px-4 py-2.5" x-data="{ copied: false }">
-                                <div class="min-w-0">
+                            <div class="flex items-center justify-between gap-3 px-3 py-2.5 sm:px-4" x-data="{ copied: false }">
+                                <div class="min-w-0 flex-1">
                                     <dt class="text-xs text-gray-500">{{ $label }}</dt>
-                                    <dd class="truncate font-mono font-medium text-gray-900">{{ $value }}</dd>
+                                    <dd class="break-all font-mono text-xs font-medium text-gray-900 sm:text-sm">{{ $value }}</dd>
                                 </div>
 
                                 <button type="button" title="Copiar" aria-label="Copiar {{ $label }}"
                                     x-on:click="navigator.clipboard.writeText(@js((string) $value)); copied = true; setTimeout(() => copied = false, 1500)"
-                                    class="inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-sm border border-gray-200 text-gray-500 transition hover:bg-gray-50 hover:text-blue-600">
+                                    class="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-sm border border-gray-200 text-gray-500 transition hover:bg-gray-50 hover:text-blue-600">
                                     {{-- heroicons: document-duplicate --}}
                                     <svg x-show="! copied" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
@@ -317,9 +440,9 @@ new #[Layout('layouts::public')] class extends Component
                         @endforeach
                     </dl>
 
-                    <footer class="flex items-center justify-between border-t border-gray-100 bg-blue-50 px-4 py-3">
+                    <footer class="flex items-center justify-between gap-2 border-t border-gray-100 bg-blue-50 px-4 py-3">
                         <span class="text-sm font-medium text-blue-700">Valor a transferir</span>
-                        <span class="text-lg font-bold text-blue-700">{{ number_format($this->total, 0, ',', ' ') }} Kz</span>
+                        <span class="whitespace-nowrap text-base font-bold text-blue-700 sm:text-lg">{{ number_format($this->total, 0, ',', ' ') }} Kz</span>
                     </footer>
                 </div>
 
@@ -405,7 +528,7 @@ new #[Layout('layouts::public')] class extends Component
 
                         {{-- Zona para escolher o ficheiro --}}
                         <label for="doc" @class([
-                            'flex cursor-pointer flex-col items-center gap-2 rounded-sm border-2 border-dashed px-4 py-6 text-center transition hover:bg-gray-50',
+                            'flex cursor-pointer flex-col items-center gap-2 rounded-sm border-2 border-dashed px-3 py-5 text-center transition hover:bg-gray-50 sm:px-4 sm:py-6',
                             'border-red-300' => $errors->has('doc'),
                             'border-gray-300' => ! $errors->has('doc'),
                         ])>
@@ -415,7 +538,7 @@ new #[Layout('layouts::public')] class extends Component
                             </svg>
 
                             @if ($doc)
-                                <span class="text-sm font-medium text-gray-900">{{ $doc->getClientOriginalName() }}</span>
+                                <span class="max-w-full break-all text-sm font-medium text-gray-900">{{ $doc->getClientOriginalName() }}</span>
                                 <span class="text-xs text-gray-500">Clique para trocar de ficheiro</span>
                             @else
                                 <span class="text-sm font-medium text-gray-700">Clique para escolher o comprovativo</span>
@@ -437,15 +560,15 @@ new #[Layout('layouts::public')] class extends Component
                             </p>
                         @enderror
 
-                        <button type="submit""
+                        <button type="submit" wire:loading.attr="disabled" wire:target="SendProof, doc"
 
                             class="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-sm
-                                 bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm 
-                                    transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50">
+                                 bg-green-600 px-4 py-3 text-sm font-semibold text-white shadow-sm 
+                                    transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50 sm:py-2.5">
 
                             {{-- heroicons: paper-airplane --}}
 
-                            <svg wire:loading.remove wire:target="sendDoc" xmlns="http://www.w3.org/2000/svg" 
+                            <svg wire:loading.remove wire:target="SendProof" xmlns="http://www.w3.org/2000/svg" 
                                 fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
 
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 
@@ -454,7 +577,7 @@ new #[Layout('layouts::public')] class extends Component
 
                             {{-- heroicons: arrow-path (a girar durante o envio) --}}
 
-                            <svg wire:loading wire:target="sendDoc" xmlns="http://www.w3.org/2000/svg" fill="none" 
+                            <svg wire:loading wire:target="SendProof" xmlns="http://www.w3.org/2000/svg" fill="none" 
                                 viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 animate-spin">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 
                                     19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 
