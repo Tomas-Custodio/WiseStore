@@ -13,7 +13,7 @@
     <body class="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4 text-gray-800 antialiased">
 
         <a href="{{ route('public.products.index') }}" wire:navigate class="mb-6 text-2xl font-bold tracking-tight text-gray-900">
-            Wonder<span class="text-blue-600">cell</span>
+            Wise<span class="text-blue-600">Store</span>
         </a>
 
         <main class="w-full max-w-sm">
