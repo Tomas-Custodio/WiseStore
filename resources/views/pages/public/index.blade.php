@@ -13,6 +13,11 @@ use Livewire\Component;
 new #[Layout('layouts::public')] #[Title('Início')] class extends Component
 {
     /**
+     * Último produto adicionado ao carrinho (mostra o ícone de confirmação).
+     */
+    public ?int $addedProductId = null;
+
+    /**
      * Categorias com mais produtos, para a grelha de categorias.
      *
      * @return Collection<int, Category>
@@ -98,6 +103,25 @@ new #[Layout('layouts::public')] #[Title('Início')] class extends Component
     }
 
     /**
+     * Adiciona 1 unidade do produto ao carrinho (máximo 99 por produto).
+     */
+    public function addToCart(int $productId): void
+    {
+        if (! auth()->check()) {
+            $this->redirectRoute('public.login', navigate: true);
+
+            return;
+        }
+
+        $product = Product::where('status', 'active')->findOrFail($productId);
+
+        // Garante que o utilizador tem um carrinho e soma 1 unidade ao produto.
+        auth()->user()->cart()->firstOrCreate()->addProduct($product);
+
+        $this->addedProductId = $product->id;
+    }
+
+    /**
      * @return \Illuminate\Database\Eloquent\Builder<Product>
      */
     private function activeProductsQuery(): \Illuminate\Database\Eloquent\Builder
@@ -135,12 +159,7 @@ new #[Layout('layouts::public')] #[Title('Início')] class extends Component
             <div>
                 {{-- chama atencao ( micro ) --}}
 
-                <span class="inline-flex items-center gap-2 rounded-full border 
-                    border-white/15 bg-white/10 px-3 py-1 text-xs font-medium text-blue-100">
-                    <span class="size-2 animate-pulse rounded-full bg-green-400">
-                    </span>
-                    Novidades a chegar todas as semanas
-                </span>
+             
 
                 {{-- mensagem chamativa --}}
 
@@ -288,7 +307,7 @@ new #[Layout('layouts::public')] #[Title('Início')] class extends Component
             <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <p class="text-sm font-semibold uppercase tracking-wide text-blue-600">Explora</p>
-                    <h2 class="mt-1 text-3xl font-bold tracking-tight text-gray-900">Compra por categoria</h2>
+                    <h2 class="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Compra por categoria</h2>
                 </div>
                 <a href="{{ route('public.categories.index') }}" wire:navigate class="text-sm font-semibold text-blue-600 hover:underline">
                     Todas as categorias →
@@ -349,7 +368,7 @@ new #[Layout('layouts::public')] #[Title('Início')] class extends Component
         <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
                 <p class="text-sm font-semibold uppercase tracking-wide text-blue-600">Novidades</p>
-                <h2 class="mt-1 text-3xl font-bold tracking-tight text-gray-900">Produtos em destaque</h2>
+                <h2 class="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Produtos em destaque</h2>
                 <p class="mt-2 text-sm text-gray-500">Os produtos mais recentes da nossa loja.</p>
             </div>
             <a href="{{ route('public.products.index') }}" wire:navigate class="text-sm font-semibold text-blue-600 hover:underline">
@@ -358,19 +377,27 @@ new #[Layout('layouts::public')] #[Title('Início')] class extends Component
 
         </div>
 
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
 
             @forelse ($this->products as $product)
 
-                <div wire:key="product-{{ $product->id }}"
-                    class="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+                {{-- Cartão de produto: tudo leva à página de detalhes --}}
+                <a
+                    href="{{ route('public.products.show', $product) }}"
+                    wire:navigate
+                    wire:key="product-{{ $product->id }}"
+                    class="group flex flex-col overflow-hidden rounded-sm border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
+                >
 
-                    {{-- Imagem --}}
-                    <div class="relative aspect-[4/3] overflow-hidden bg-gray-100">
+                    <div class="relative aspect-square overflow-hidden bg-gray-100">
 
                         @if ($product->img)
-                            <img src="{{ asset('storage/' . $product->img) }}" alt="{{ $product->name }}"
-                                class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
+                            <img
+                                src="{{ asset('storage/'.$product->img) }}"
+                                alt="{{ $product->name }}"
+                                loading="lazy"
+                                class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                            >
                         @else
                             <div class="flex h-full items-center justify-center">
                                 {{-- heroicons: photo --}}
@@ -381,10 +408,9 @@ new #[Layout('layouts::public')] #[Title('Início')] class extends Component
                         @endif
 
                         {{-- Like --}}
-
-                        <button type="button" wire:click="toggleLike({{ $product->id }})"
+                        <button type="button" wire:click.prevent.stop="toggleLike({{ $product->id }})"
                             @class([
-                                'absolute right-3 top-3 flex cursor-pointer items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium shadow-md backdrop-blur transition',
+                                'absolute right-2 top-2 flex cursor-pointer items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium shadow-md backdrop-blur transition',
                                 'bg-red-500 text-white' => $product->liked_by_me,
                                 'bg-white/90 text-gray-700 hover:bg-red-50 hover:text-red-500' => ! $product->liked_by_me,
                             ])
@@ -398,52 +424,61 @@ new #[Layout('layouts::public')] #[Title('Início')] class extends Component
                             <span>{{ $product->likes_count }}</span>
                         </button>
 
+                        {{-- Adicionar ao carrinho --}}
+                        <button type="button" wire:click.prevent.stop="addToCart({{ $product->id }})"
+                            wire:loading.attr="disabled" wire:target="addToCart({{ $product->id }})"
+                            @class([
+                                'absolute bottom-2 right-2 flex size-10 cursor-pointer items-center justify-center rounded-full shadow-md backdrop-blur transition disabled:opacity-60',
+                                'bg-green-500 text-white' => $addedProductId === $product->id,
+                                'bg-white/90 text-gray-700 hover:bg-blue-600 hover:text-white' => $addedProductId !== $product->id,
+                            ])
+                            title="{{ $addedProductId === $product->id ? 'Adicionado ao carrinho' : 'Adicionar ao carrinho' }}"
+                            aria-label="Adicionar {{ $product->name }} ao carrinho">
+
+                            @if ($addedProductId === $product->id)
+                                {{-- heroicons: check --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                </svg>
+                            @else
+                                {{-- heroicons: shopping-cart --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                                </svg>
+                            @endif
+                        </button>
+
                         @if ($product->promotion)
-                            <span class="absolute left-3 top-3 rounded-full bg-red-600 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white shadow">
+                            <span class="absolute left-2 top-2 rounded-sm bg-red-600 px-2 py-1 text-xs font-semibold text-white">
                                 Promoção
                             </span>
                         @endif
+
                     </div>
 
-                    {{-- Conteúdo --}}
-                    <div class="p-5">
-                        @if ($product->category)
-                            <a href="{{ route('public.categories.show', $product->category) }}" wire:navigate
-                                class="text-xs font-semibold uppercase tracking-wide text-blue-600 hover:underline">
-                                {{ $product->category->name }}
-                            </a>
-                        @endif
+                    <div class="flex flex-1 flex-col p-4">
 
-                        <h3 class="mt-1 line-clamp-1 text-lg font-bold text-gray-900">
-                            <a href="{{ route('public.products.show', $product) }}" wire:navigate class="hover:text-blue-600">
-                                {{ $product->name }}
-                            </a>
-                        </h3>
+                        <h2 class="line-clamp-2 font-medium text-gray-800 group-hover:text-blue-600">
+                            {{ $product->name }}
+                        </h2>
 
-                        <p class="mt-2 line-clamp-2 text-sm text-gray-500">{{ $product->description }}</p>
+                        <p class="mt-1 line-clamp-2 text-sm text-gray-500">
+                            {{ $product->description }}
+                        </p>
 
-                        <div class="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
-                            <p class="text-xl font-extrabold text-gray-900">{{ $product->formattedPrice() }}</p>
+                        <p class="mt-auto pt-3 text-lg font-bold text-red-600">
+                            {{ $product->formattedPrice() }}
+                        </p>
 
-                            <div class="flex items-center gap-3">
-                                <a href="{{ route('public.comments.index', $product) }}" wire:navigate
-                                    class="flex items-center gap-1 text-sm text-gray-500 hover:text-blue-600"
-                                    title="{{ $product->comments_count }} {{ Str::plural('comentário', $product->comments_count) }}">
-                                    {{-- heroicons: chat-bubble-oval-left --}}
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z" />
-                                    </svg>
-                                    {{ $product->comments_count }}
-                                </a>
-
-                                <a href="{{ route('public.products.show', $product) }}" wire:navigate
-                                    class="rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-600">
-                                    Ver detalhes
-                                </a>
-                            </div>
+                        <div class="mt-2 flex items-center justify-end border-t border-gray-100 pt-2 text-xs">
+                            <span class="font-semibold text-blue-600">
+                                Ver detalhes →
+                            </span>
                         </div>
+
                     </div>
-                </div>
+
+                </a>
 
             @empty
 
@@ -475,7 +510,7 @@ new #[Layout('layouts::public')] #[Title('Início')] class extends Component
                         </svg>
                         Ofertas imperdíveis
                     </p>
-                    <h2 class="mt-1 text-3xl font-bold tracking-tight">Promoções da semana</h2>
+                    <h2 class="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Promoções da semana</h2>
                 </div>
                 <a href="{{ route('public.products.index') }}" wire:navigate
                     class="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-red-600 shadow transition hover:bg-red-50">
@@ -513,7 +548,7 @@ new #[Layout('layouts::public')] #[Title('Início')] class extends Component
 
     <section class="text-center">
         <p class="text-sm font-semibold uppercase tracking-wide text-blue-600">Simples e rápido</p>
-        <h2 class="mt-1 text-3xl font-bold tracking-tight text-gray-900">Como funciona</h2>
+        <h2 class="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Como funciona</h2>
 
         <ol class="mt-10 grid gap-6 md:grid-cols-3">
 
@@ -571,8 +606,8 @@ new #[Layout('layouts::public')] #[Title('Início')] class extends Component
                     {{ Str::before(auth()->user()->name, ' ') }}! Pronto para mais?
                 </h2>
 
-                <p class="mt-4 text-blue-100">Descobre os novos produtos
-                    que chegaram à loja esta semana.
+                <p class="mt-4 text-blue-100">Descobre os novos 
+                    produtos que chegaram à loja esta semana.
                 </p>
 
                 <div class="mt-8">

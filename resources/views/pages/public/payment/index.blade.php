@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Banco;
+use App\Models\Bank;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
@@ -31,7 +31,7 @@ new #[Layout('layouts::public')] class extends Component
 
         // Começa com o primeiro banco guardado na base de dados
 
-        $this->bancoId = Banco::query()->orderBy('id')->value('id');
+        $this->bancoId = Bank::query()->orderBy('id')->value('id');
     }
 
     public function SendProof(){
@@ -58,11 +58,11 @@ new #[Layout('layouts::public')] class extends Component
 
     public function bancos() {
 
-        return Banco::query()->orderBy('id')->get();
+        return Bank::query()->orderBy('id')->get();
     }
 
     #[Computed]
-    public function bancoEscolhido(): ?Banco {
+    public function bancoEscolhido(): ?Bank {
 
         return $this->bancos->firstWhere('id', $this->bancoId);
     }
@@ -139,7 +139,7 @@ new #[Layout('layouts::public')] class extends Component
         <section class="overflow-hidden rounded-sm border border-gray-200 bg-white
             shadow-sm lg:col-span-3">
 
-            <header class="flex items-center justify-between border-b border-gray-100
+            <header class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100
                  bg-gray-50 px-4 py-3">
 
                 <div class="flex items-center gap-2">
@@ -170,6 +170,7 @@ new #[Layout('layouts::public')] class extends Component
                 </span>
             </header>
 
+            <div class="overflow-x-auto">
             <table class="w-full text-left">
                 <thead class="text-xs font-semibold uppercase tracking-wider text-gray-500">
                     <tr>
@@ -193,6 +194,7 @@ new #[Layout('layouts::public')] class extends Component
                     @endforeach
                 </tbody>
             </table>
+            </div>
 
             <footer class="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-4 py-3">
                 <span class="text-sm font-medium text-gray-600">Total a pagar</span>
@@ -394,8 +396,8 @@ new #[Layout('layouts::public')] class extends Component
                                 </svg>
                                 <span>
                                     O comprovativo anterior foi rejeitado. Verifique a transferência e envie um novo.
-                                    @if ($order->paymentproof?->rejection_reason)
-                                        <span class="mt-1 block"><strong>Motivo:</strong> {{ $order->paymentproof->rejectionReasonLabel() }}@if ($order->paymentproof->rejection_note) — {{ $order->paymentproof->rejection_note }}@endif</span>
+                                    @if ($order->paymentproof?->msg)
+                                        <span class="mt-1 block"><strong>Motivo:</strong> {{ $order->paymentproof->msg }}</span>
                                     @endif
                                 </span>
                             </p>

@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -95,9 +97,17 @@ class User extends Authenticatable
         return $this->hasMany(Like::class);
     }
 
-    public function carts(): HasMany
+    public function cart(): HasOne
     {
-        return $this->hasMany(Cart::class);
+        return $this->hasOne(Cart::class);
+    }
+
+    /**
+     * Produtos do carrinho do utilizador (User -> Cart -> CartItem).
+     */
+    public function cartItems(): HasManyThrough
+    {
+        return $this->hasManyThrough(CartItem::class, Cart::class);
     }
 
     public function orders(): HasMany
@@ -108,7 +118,7 @@ class User extends Authenticatable
     public function bancos(): HasMany
     {
 
-        return $this->hasMany(Banco::class);
+        return $this->hasMany(Bank::class);
     }
 
     public function payments(): HasMany

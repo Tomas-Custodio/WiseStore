@@ -77,7 +77,7 @@ new class extends Component
 <article class="mx-auto max-w-5xl overflow-x-scroll ">
 
 
-    <header class="mb-3 flex items-center justify-between gap-3">
+    <header class="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3">
             <span class="flex size-10 items-center justify-center rounded-sm bg-blue-50 text-blue-600">
                 {{-- heroicons: chat-bubble-left-right --}}

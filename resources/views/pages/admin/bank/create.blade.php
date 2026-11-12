@@ -1,7 +1,7 @@
 <?php
 
 use Livewire\Component;
-use App\Models\Banco;
+use App\Models\Bank;
 
 new class extends Component {
     public string $name = '';

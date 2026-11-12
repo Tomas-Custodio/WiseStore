@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -24,9 +25,15 @@ new #[Layout('layouts::public')] class extends Component
         ]);
 
         $data['password'] = Hash::make($data['password']);
-        User::create($data);
-        $this->reset();
+        $user = User::create($data);
+
+        // Inicia a sessão com o utilizador acabado de criar.
+
+        Auth::login($user);
+        session()->regenerate();
         session()->flash('msg', 'Conta criada com sucesso!');
+
+        $this->redirectRoute('home');
     }
 }; ?>
 

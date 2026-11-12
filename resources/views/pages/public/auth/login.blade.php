@@ -13,8 +13,8 @@ new #[Layout('layouts::auth')] #[Title('Entrar')] class extends Component
 
     public bool $remember = false;
 
-    public function login(): void
-    {
+    public function login(): void {
+
         $credentials = $this->validate([
             'email' => 'required|email',
             'password' => 'required|string',
@@ -22,10 +22,11 @@ new #[Layout('layouts::auth')] #[Title('Entrar')] class extends Component
 
         // 1. Confirma email e password sem iniciar sessão.
 
-        if (! Auth::validate($credentials)) {
+        if (! Auth::validate($credentials) ) {
+
             $this->reset('password');
             $this->addError('email', 'Email ou password incorretos.');
-
+            
             return;
         }
 
@@ -49,12 +50,12 @@ new #[Layout('layouts::auth')] #[Title('Entrar')] class extends Component
         // Admin vai para o dashboard; cliente vai para o início da loja.
 
         if (Auth::user()->isAdmin()) {
-            $this->redirectRoute('dashboard', navigate: true);
+            $this->redirectRoute('dashboard');
 
             return;
         }
 
-        $this->redirectRoute('home', navigate: true);
+        $this->redirectRoute('home');
     }
 }; ?>
 

@@ -13,6 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(fn () => route('public.login'));
+
+        // Quem já tem sessão iniciada não volta ao login/registo: admin vai ao dashboard, cliente à home.
+        $middleware->redirectUsersTo(fn (Request $request) => $request->user()?->isAdmin() ? route('dashboard') : route('home'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

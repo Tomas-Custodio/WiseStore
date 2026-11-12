@@ -1,17 +1,17 @@
 <?php
 
 use Livewire\Component;
-use App\Models\Banco;
+use App\Models\Bank;
 
 new class extends Component {
 
-    public Banco $banco;
+    public Bank $banco;
 
     public string $name = '';
     public string $number = '';
     public string $iban = '';
 
-    public function mount(Banco $banco) {
+    public function mount(Bank $banco) {
 
         $this->banco = $banco;
         $this->name = $banco->name;

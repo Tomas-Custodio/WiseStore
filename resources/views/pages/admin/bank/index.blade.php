@@ -1,22 +1,22 @@
 <?php
 
 use Livewire\Component;
-use App\Models\Banco;
+use App\Models\Bank;
 
 new class extends Component {
     public string $search = '';
 
     public function total()
     {
-        return Banco::count();
+        return Bank::count();
     }
 
     public function bancosDiferentes()
     {
-        return Banco::distinct('name')->count('name');
+        return Bank::distinct('name')->count('name');
     }
 
-    public function delete(Banco $banco)
+    public function delete(Bank $banco)
     {
         $banco->delete();
         session()->flash('msg', 'Conta bancária removida!');
@@ -24,7 +24,7 @@ new class extends Component {
 
     public function bancos()
     {
-        return Banco::query()
+        return Bank::query()
             ->when($this->search, fn ($q) => $q->where(fn ($q) => $q
                 ->where('name', 'like', "%{$this->search}%")
                 ->orWhere('number', 'like', "%{$this->search}%")
@@ -58,7 +58,7 @@ new class extends Component {
 
     <!-- cabecalho das contas bancarias --->
 
-    <header class="mb-3 flex items-center justify-between gap-3">
+    <header class="mb-3 flex flex-wrap items-center justify-between gap-3">
 
         <div class="flex items-center gap-3">
             <span class="flex size-10 items-center justify-center rounded-sm bg-green-50 text-green-600">
@@ -87,7 +87,7 @@ new class extends Component {
 
     <!--- contadores das contas bancarias ---->
 
-    <section class="mb-3 grid grid-cols-2 gap-3">
+    <section class="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
 
         <!--- total de contas ---->
 

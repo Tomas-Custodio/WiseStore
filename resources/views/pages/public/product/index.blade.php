@@ -78,9 +78,8 @@ new #[Layout('layouts::public')] class extends Component
 
         $product = Product::where('status', 'active')->findOrFail($productId);
 
-        $cart = auth()->user()->carts()->firstOrNew(['product_id' => $product->id]);
-        $cart->quantity = min(($cart->quantity ?? 0) + 1, 99);
-        $cart->save();
+        // Garante que o utilizador tem um carrinho e soma 1 unidade ao produto.
+        auth()->user()->cart()->firstOrCreate()->addProduct($product);
 
         $this->addedProductId = $product->id;
     }

@@ -44,7 +44,7 @@ new class extends Component
 
 <article class="mx-auto max-w-5xl">
 
-    <header class="mb-3 flex items-center justify-between gap-3">
+    <header class="mb-3 flex flex-wrap items-center justify-between gap-3">
 
         <div class="flex items-center gap-3">
 
@@ -73,7 +73,7 @@ new class extends Component
     </header>
 
     {{-- Cards separados --}}
-    <section class="mb-3 grid grid-cols-3 gap-3">
+    <section class="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
 
         <div class="flex items-start justify-between rounded-sm border border-gray-200 bg-white p-4 shadow-sm">
             <div>

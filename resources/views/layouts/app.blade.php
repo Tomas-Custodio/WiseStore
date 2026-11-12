@@ -10,7 +10,10 @@
 
         @livewireStyles
     </head>
-    <body class="flex min-h-screen bg-gray-50 text-gray-800 antialiased">
+    <body x-data="{ sidebarOpen: false }" class="flex min-h-screen bg-gray-50 text-gray-800 antialiased">
+
+        {{-- Fundo escuro do menu (mobile) --}}
+        <div x-show="sidebarOpen" x-cloak x-transition.opacity @click="sidebarOpen = false" class="fixed inset-0 z-40 bg-black/50 lg:hidden"></div>
 
         {{-- Aside --}}
         @php
@@ -20,7 +23,8 @@
             $isOwnProfile = request()->routeIs('users.edit') && request()->route('user')?->is(auth()->user());
         @endphp
 
-        <aside class="sticky top-0 flex h-screen w-64 shrink-0 flex-col self-start bg-gray-900 text-gray-300">
+        <aside :class="{ 'translate-x-0!': sidebarOpen }"
+            class="fixed inset-y-0 left-0 z-50 flex h-screen w-64 shrink-0 -translate-x-full flex-col self-start bg-gray-900 text-gray-300 transition-transform duration-200 lg:sticky lg:top-0 lg:translate-x-0">
 
             {{-- Logótipo --}}
             <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center gap-2 border-b border-gray-800 px-4 py-3">
@@ -35,7 +39,7 @@
             </a>
 
             {{-- Navegação (do mais importante para o menos importante) --}}
-            <nav class="flex-1 space-y-0.5 p-3 text-sm font-medium">
+            <nav class="flex-1 space-y-0.5 overflow-y-auto p-3 text-sm font-medium">
 
                 {{-- Geral --}}
                 <a href="{{ route('dashboard') }}" wire:navigate @class([$linkBase, $linkActive => request()->routeIs('dashboard')])>
@@ -169,9 +173,23 @@
         </aside>
 
         {{-- Conteúdo --}}
-        <main class="flex-1 min-w-0 overflow-hidden p-8">
-            {{ $slot }}
-        </main>
+        <div class="flex min-w-0 flex-1 flex-col">
+
+            {{-- Barra superior (mobile) --}}
+            <header class="sticky top-0 z-30 flex items-center gap-3 border-b border-gray-800 bg-gray-900 px-4 py-3 text-white lg:hidden">
+                <button type="button" @click="sidebarOpen = true" aria-label="Abrir menu" class="cursor-pointer rounded-sm p-1 hover:bg-gray-800">
+                    {{-- heroicons: bars-3 --}}
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    </svg>
+                </button>
+                <span class="text-lg font-bold">Wise<span class="text-blue-500">Store</span></span>
+            </header>
+
+            <main class="flex-1 min-w-0 overflow-hidden p-4 sm:p-6 lg:p-8">
+                {{ $slot }}
+            </main>
+        </div>
 
         @livewireScripts
     </body>

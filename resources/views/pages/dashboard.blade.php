@@ -152,6 +152,7 @@ new #[Title('Dashboard')] class extends Component
                 </a>
             </header>
 
+            <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
                 <thead class="bg-gray-50 text-gray-600">
                     <tr>
@@ -209,6 +210,7 @@ new #[Title('Dashboard')] class extends Component
                     @endforelse
                 </tbody>
             </table>
+            </div>
 
         </div>
 
@@ -233,6 +235,7 @@ new #[Title('Dashboard')] class extends Component
                 </a>
             </header>
 
+            <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
                 <thead class="bg-gray-50 text-gray-600">
                     <tr>
@@ -277,6 +280,7 @@ new #[Title('Dashboard')] class extends Component
                     @endforelse
                 </tbody>
             </table>
+            </div>
 
         </div>
 

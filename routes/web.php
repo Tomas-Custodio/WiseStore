@@ -22,7 +22,6 @@ Route::middleware(['auth', 'can:only-admin'])->prefix('admins')->group(function 
     Route::livewire('/products/{product}/edit', 'pages::admin.product.edit')->name('products.edit');
 
     Route::livewire('/comments', 'pages::admin.comment.index')->name('comments.index');
-
     Route::livewire('/categories', 'pages::admin.category.index')->name('categories.index');
     Route::livewire('/categories/create', 'pages::admin.category.create')->name('categories.create');
     Route::livewire('/categories/{category}/edit', 'pages::admin.category.edit')->name('categories.edit');
@@ -44,9 +43,9 @@ Route::middleware(['auth', 'can:only-admin'])->prefix('admins')->group(function 
 
 });
 
-Route::prefix('public')->name('public.')->group(function () {
+Route::name('public.')->group(function () {
 
-    Route::livewire('/login', 'pages::public.auth.login')->name('login');
+    Route::livewire('/login', 'pages::public.auth.login')->middleware('guest')->name('login');
 
     Route::post('/logout', function () {
 
@@ -58,11 +57,15 @@ Route::prefix('public')->name('public.')->group(function () {
 
     })->name('logout');
 
-    Route::livewire('/register', 'pages::public.user.create')->name('users.create');
+    Route::livewire('/register', 'pages::public.user.create')->middleware('guest')->name('users.create');
     Route::livewire('/profile', 'pages::public.user.edit')->middleware('auth')->name('profile');
 
     Route::livewire('/encomendas', 'pages::public.order.index')->middleware('auth')->name('encomendas.index');
     Route::livewire('/pagamentos/{order}', 'pages::public.payment.index')->middleware('auth')->name('payment.index');
+
+    Route::livewire('/checkout', 'pages::public.checkout')->middleware('auth')->name('checkout');
+
+    Route::livewire('/promocoes', 'pages::public.promotion.index')->name('promotions.index');
 
     Route::livewire('/products', 'pages::public.product.index')->name('products.index');
     Route::livewire('/products/{product}', 'pages::public.product.show')->name('products.show');

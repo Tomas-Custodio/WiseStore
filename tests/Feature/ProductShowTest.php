@@ -139,7 +139,7 @@ class ProductShowTest extends TestCase
             ->assertSee('Produto adicionado ao carrinho!')
             ->call('addToCart');
 
-        $this->assertDatabaseHas('cart_product', [
+        $this->assertDatabaseHas('cart_items', [
             'cart_id' => $user->cart->id,
             'product_id' => $product->id,
             'quantity' => 3,
@@ -154,6 +154,6 @@ class ProductShowTest extends TestCase
             ->call('addToCart')
             ->assertRedirect(route('public.login'));
 
-        $this->assertDatabaseCount('cart_product', 0);
+        $this->assertDatabaseCount('cart_items', 0);
     }
 }

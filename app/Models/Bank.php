@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Banco extends Model
+class Bank extends Model
 {
     protected $fillable = ['name', 'number', 'iban'];
 

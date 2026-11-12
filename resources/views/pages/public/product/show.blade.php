@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\CartItem;
 use App\Models\Like;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Collection;
@@ -49,16 +50,16 @@ new #[Layout('layouts::public')] class extends Component
     }
 
     /**
-     * Procura o carrinho deste utilizador para este produto.
+     * Procura este produto dentro do carrinho do utilizador.
      */
     #[Computed]
-    public function cart()
+    public function cart(): ?CartItem
     {
         if (! auth()->check()) {
             return null;
         }
 
-        return auth()->user()->carts()
+        return auth()->user()->cartItems()
             ->where('product_id', $this->product->id)
             ->first();
     }
@@ -108,7 +109,7 @@ new #[Layout('layouts::public')] class extends Component
             return;
         }
 
-        $cart = auth()->user()->carts()->where('product_id', $this->product->id)->first();
+        $cart = $this->cart;
 
         if ($cart && $cart->quantity > 1) {
             $cart->quantity -= 1;
@@ -133,17 +134,8 @@ new #[Layout('layouts::public')] class extends Component
             'quantity' => 'required|integer|min:1|max:99',
         ]);
 
-        $cart = auth()->user()->carts()->where('product_id', $this->product->id)->first();
-
-        if ($cart) {
-            $cart->quantity += $quantity['quantity'];
-            $cart->save();
-        } else {
-            auth()->user()->carts()->create([
-                'product_id' => $this->product->id,
-                'quantity' => $quantity['quantity'],
-            ]);
-        }
+        // Garante que o utilizador tem um carrinho e soma a quantidade ao produto.
+        auth()->user()->cart()->firstOrCreate()->addProduct($this->product, $quantity['quantity']);
 
         unset($this->cart);
         $this->reset('quantity');
