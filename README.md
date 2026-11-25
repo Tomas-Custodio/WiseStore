@@ -1,3 +1,5 @@
+<img width="1905" height="992" alt="wisestore-1-inicio" src="https://github.com/user-attachments/assets/0aa62e4d-48c3-4b9f-b682-be4fd18a1fcb" />
+
 # 🛍️ WiseStore
 
 WiseStore é uma loja virtual desenvolvida com **Laravel**, **Livewire**, **PHP** e **MySQL**.
