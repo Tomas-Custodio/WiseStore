@@ -1,4 +1,6 @@
 <img width="1905" height="992" alt="wisestore-1-inicio" src="https://github.com/user-attachments/assets/0aa62e4d-48c3-4b9f-b682-be4fd18a1fcb" />
+<img width="1905" height="842" alt="wisestore-2-produto" src="https://github.com/user-attachments/assets/0f8fc582-6b8d-40fe-8870-dc0657261069" />
+
 
 # 🛍️ WiseStore
 
